@@ -8,6 +8,7 @@ import { format } from "date-fns";
 export default function SystemAdminClient({ settings, recentLogs, totalLogs }: any) {
     const [testEmailAddr, setTestEmailAddr] = useState("");
     const [sending, setSending] = useState(false);
+    const [regeneratingQR, setRegeneratingQR] = useState(false);
 
     async function sendTestEmail() {
         if (!testEmailAddr) { showToast("Enter an email address.", "warning"); return; }
@@ -16,6 +17,21 @@ export default function SystemAdminClient({ settings, recentLogs, totalLogs }: a
         if (res.ok) showToast("Test email sent!", "success");
         else showToast("Failed to send email.", "error");
         setSending(false);
+    }
+
+    async function regenerateQRCodes() {
+        const ok = await showConfirm("Regenerate and upload QR codes for all books that are missing them? This may take a while.", "warning");
+        if (!ok) return;
+        setRegeneratingQR(true);
+        try {
+            const res = await fetch("/api/books/regenerate-qr", { method: "POST" });
+            const d = await res.json();
+            if (res.ok) showToast(d.message, "success");
+            else showToast(d.error || "Failed to regenerate QR codes.", "error");
+        } catch {
+            showToast("Network error.", "error");
+        }
+        setRegeneratingQR(false);
     }
 
     async function createBackup() {
@@ -77,7 +93,7 @@ export default function SystemAdminClient({ settings, recentLogs, totalLogs }: a
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 24 }}>
-                
+
                 {/* System Information - NEW */}
                 <div style={{ background: "var(--surface)", borderRadius: "var(--radius-xl)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", overflow: "hidden" }}>
                     <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 8 }}>
@@ -159,7 +175,7 @@ export default function SystemAdminClient({ settings, recentLogs, totalLogs }: a
                         <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" style={{ width: 22, height: 22 }}><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
                         Bulk Operations
                     </h2>
-                    
+
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 16 }}>
                         <Link href="/books/bulk-import" style={{ background: "var(--background)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 20, textDecoration: "none", transition: "all 0.2s" }} className="category-card-hover" onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "var(--primary)"; }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"; }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
@@ -170,7 +186,7 @@ export default function SystemAdminClient({ settings, recentLogs, totalLogs }: a
                             </div>
                             <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", margin: 0, paddingLeft: 52 }}>Import multiple books simultaneously using CSV, Excel, or ZIP files.</p>
                         </Link>
-                        
+
                         <Link href="/users/bulk-import" style={{ background: "var(--background)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 20, textDecoration: "none", transition: "all 0.2s" }} className="category-card-hover" onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#0ea5e9"; }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"; }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
                                 <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(14,165,233,0.1)", color: "#0ea5e9", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -184,7 +200,7 @@ export default function SystemAdminClient({ settings, recentLogs, totalLogs }: a
                         <Link href="/dashboard/notification-center" style={{ background: "var(--background)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 20, textDecoration: "none", transition: "all 0.2s" }} className="category-card-hover" onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#8b5cf6"; }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border)"; }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
                                 <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(139,92,246,0.1)", color: "#8b5cf6", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
                                 </div>
                                 <h3 style={{ fontSize: "1.0625rem", fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>Bulk Email Users</h3>
                             </div>
@@ -199,7 +215,7 @@ export default function SystemAdminClient({ settings, recentLogs, totalLogs }: a
                         <svg viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" strokeWidth="2" style={{ width: 22, height: 22 }}><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /></svg>
                         Database Management
                     </h2>
-                    
+
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 20 }}>
                         <div style={{ background: "var(--background)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 24, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                             <div>
@@ -211,15 +227,26 @@ export default function SystemAdminClient({ settings, recentLogs, totalLogs }: a
                                 Download Backup
                             </button>
                         </div>
-                        
+
                         <div style={{ background: "var(--background)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 24, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                             <div>
                                 <h4 style={{ fontSize: "1rem", fontWeight: 600, marginBottom: 8, color: "var(--text-primary)" }}>Recalculate Status</h4>
                                 <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", marginBottom: 16 }}>Force a manual sweep of all borrowed books to update overdue statuses and fines immediately.</p>
                             </div>
                             <button className="btn btn-secondary" onClick={updateOverdue} style={{ padding: "10px 20px", width: "fit-content" }}>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 18, height: 18, marginRight: 8, verticalAlign: "middle", display: "inline-block" }}><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-10.44l5.67-5.67"/></svg>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 18, height: 18, marginRight: 8, verticalAlign: "middle", display: "inline-block" }}><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-10.44l5.67-5.67" /></svg>
                                 Run Recalculation
+                            </button>
+                        </div>
+
+                        <div style={{ background: "var(--background)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 24, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                            <div>
+                                <h4 style={{ fontSize: "1rem", fontWeight: 600, marginBottom: 8, color: "var(--text-primary)" }}>Regenerate QR Codes</h4>
+                                <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", marginBottom: 16 }}>Upload missing or broken QR codes to Cloudinary for all books. Safe to run multiple times.</p>
+                            </div>
+                            <button className="btn btn-secondary" onClick={regenerateQRCodes} disabled={regeneratingQR} style={{ padding: "10px 20px", width: "fit-content" }}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 18, height: 18, marginRight: 8, verticalAlign: "middle", display: "inline-block" }}><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
+                                {regeneratingQR ? "Regenerating…" : "Regenerate QR Codes"}
                             </button>
                         </div>
                     </div>
@@ -228,7 +255,7 @@ export default function SystemAdminClient({ settings, recentLogs, totalLogs }: a
                 {/* Email Server Diagnostics */}
                 <div style={{ background: "var(--surface)", borderRadius: "var(--radius-xl)", padding: 32, border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
                     <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginBottom: 24, display: "flex", alignItems: "center", gap: 8, color: "var(--text-primary)" }}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2" style={{ width: 22, height: 22 }}><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2" style={{ width: 22, height: 22 }}><path d="M22 2L11 13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
                         Email Server Diagnostics
                     </h2>
                     <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", marginBottom: 16 }}>
