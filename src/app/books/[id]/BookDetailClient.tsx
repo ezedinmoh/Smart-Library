@@ -165,7 +165,7 @@ export default function BookDetailClient({ book, avgRating, ratingDist, canRevie
                                 {book.qrCode && isStaff && (
                                     <div className="bd-qr-section">
                                         <p>Book QR Code</p>
-                                        <img src={book.qrCode} alt="QR Code" />
+                                        <BookCoverImage src={book.qrCode} alt="QR Code" />
                                         <a href={`/api/books/${book.id}/qr-code`} className="btn btn-secondary btn-sm" style={{ marginTop: 8 }}>Download QR</a>
                                     </div>
                                 )}

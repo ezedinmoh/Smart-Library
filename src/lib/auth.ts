@@ -10,6 +10,60 @@ import { hashPassword, shouldUpgradePasswordHash, verifyPassword } from "./passw
 import { isOAuthConfigured } from "./env";
 import { authConfig } from "./auth.config";
 
+// PrismaAdapter expects String IDs — our User uses Int.
+// This wrapper coerces types so OAuth sign-in works correctly.
+function buildAdapter() {
+    const adapter = PrismaAdapter(prisma);
+    return {
+        ...adapter,
+        // Convert string userId back to Int for DB lookups
+        getUserById: async (id: string) => {
+            const user = await prisma.user.findUnique({
+                where: { id: parseInt(id) },
+                include: { profile: true },
+            });
+            if (!user) return null;
+            return { ...user, id: String(user.id) };
+        },
+        getUserByEmail: async (email: string) => {
+            const user = await prisma.user.findFirst({
+                where: { email: { equals: email, mode: "insensitive" } },
+                include: { profile: true },
+            });
+            if (!user) return null;
+            return { ...user, id: String(user.id) };
+        },
+        createUser: async (data: any) => {
+            const user = await prisma.user.create({
+                data: {
+                    email: data.email,
+                    username: data.email.split("@")[0].replace(/[^a-z0-9]/gi, "").toLowerCase() + Math.floor(Math.random() * 9999),
+                    firstName: data.name?.split(" ")[0] ?? "",
+                    lastName: data.name?.split(" ").slice(1).join(" ") ?? "",
+                    password: "",
+                    isActive: true,
+                    isEmailVerified: true,
+                    role: "student",
+                },
+            });
+            return { ...user, id: String(user.id) };
+        },
+        linkAccount: async (data: any) => {
+            return prisma.account.create({
+                data: { ...data, userId: parseInt(data.userId) },
+            });
+        },
+        getUserByAccount: async ({ provider, providerAccountId }: { provider: string; providerAccountId: string }) => {
+            const account = await prisma.account.findUnique({
+                where: { provider_providerAccountId: { provider, providerAccountId } },
+                include: { user: { include: { profile: true } } },
+            });
+            if (!account) return null;
+            return { ...account.user, id: String(account.user.id) };
+        },
+    };
+}
+
 const providers: NextAuthConfig["providers"] = [
     CredentialsProvider({
         name: "credentials",
@@ -86,7 +140,7 @@ if (isOAuthConfigured("github")) {
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     ...authConfig,
-    adapter: PrismaAdapter(prisma),
+    adapter: buildAdapter() as any,
     secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
     providers,
     callbacks: {

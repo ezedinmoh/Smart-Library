@@ -38,8 +38,16 @@ export async function HEAD(req: NextRequest, { params }: { params: Promise<{ id:
             : resolveCloudinaryUrl(rawValue, "raw") ?? null;
 
         if (urlToCheck) {
-            const check = await fetch(urlToCheck, { method: "HEAD" });
-            if (check.ok) return new NextResponse(null, { status: 200, headers: { "Content-Type": "application/pdf" } });
+            // Cloudinary raw files don't support HEAD — use GET with abort
+            const ctrl = new AbortController();
+            const timer = setTimeout(() => ctrl.abort(), 5000);
+            try {
+                const check = await fetch(urlToCheck, { method: "GET", signal: ctrl.signal });
+                clearTimeout(timer);
+                if (check.ok) return new NextResponse(null, { status: 200, headers: { "Content-Type": "application/pdf" } });
+            } catch {
+                clearTimeout(timer);
+            }
         }
 
         // Local file fallback check
