@@ -158,7 +158,7 @@ export function getClientIP(request: Request): string {
 // ── Cloudinary media URLs ─────────────────────────────────────────────────────
 const MEDIA_FIELDS: Record<string, "image" | "raw"> = {
     coverImage: "image",
-    pdfFile: "raw",
+    pdfFile: "image",   // Django-cloudinary-storage uploads PDFs as "image" resource type
     qrCode: "image",
     profilePicture: "image",
 };
@@ -178,9 +178,8 @@ export function resolveCloudinaryUrl(
     if (!cloudName) return `/${trimmed}`;
 
     const publicId = trimmed.replace(/^\/+/, "");
-    // PDFs must use "raw" resource type — using "image" causes Cloudinary "not found" errors
-    const rType = (publicId.includes("pdfs/") || publicId.toLowerCase().endsWith(".pdf")) ? "raw" : resourceType;
-    return `https://res.cloudinary.com/${cloudName}/${rType}/upload/${publicId}`;
+    // Django-cloudinary-storage stores ALL files (including PDFs) as "image" resource type
+    return `https://res.cloudinary.com/${cloudName}/${resourceType}/upload/${publicId}`;
 }
 
 function resolveMediaFields(value: unknown): unknown {

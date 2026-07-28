@@ -35,7 +35,7 @@ export async function HEAD(req: NextRequest, { params }: { params: Promise<{ id:
         // Check if the PDF is reachable without downloading it
         const urlToCheck = isAlreadyHttp
             ? rawValue
-            : resolveCloudinaryUrl(rawValue, "raw") ?? null;
+            : resolveCloudinaryUrl(rawValue, "image") ?? null;
 
         if (urlToCheck) {
             // Cloudinary raw files don't support HEAD — use GET with abort
@@ -97,9 +97,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const isAlreadyHttp = /^https?:\/\//i.test(rawValue);
 
     try {
-        // ── 1. Try Cloudinary if the stored value looks like a public_id ─────
+        // ── 1. Try Cloudinary (Django stores PDFs as "image" resource type) ──
         if (!isAlreadyHttp) {
-            const cloudinaryUrl = resolveCloudinaryUrl(rawValue, "raw");
+            const cloudinaryUrl = resolveCloudinaryUrl(rawValue, "image");
             if (cloudinaryUrl && /^https?:\/\//i.test(cloudinaryUrl)) {
                 const remote = await fetch(cloudinaryUrl);
                 if (remote.ok) {
