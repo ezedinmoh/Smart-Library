@@ -2,5 +2,10 @@
   "buildCommand": "pnpm db:generate && pnpm build",
   "installCommand": "pnpm install",
   "framework": "nextjs",
-  "regions": ["fra1"]
+  "regions": [
+    "fra1"
+  ],
+  "env": {
+    "NEXT_PHASE": "phase-production-build"
+  }
 }
