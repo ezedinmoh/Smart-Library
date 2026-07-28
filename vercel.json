@@ -1,0 +1,6 @@
+{
+  "buildCommand": "pnpm db:generate && pnpm build",
+  "installCommand": "pnpm install",
+  "framework": "nextjs",
+  "regions": ["fra1"]
+}

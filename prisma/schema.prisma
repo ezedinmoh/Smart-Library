@@ -1,0 +1,396 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                    Int                @id @default(autoincrement())
+  username              String             @unique
+  email                 String             @unique
+  password              String
+  firstName             String             @default("") @map("first_name")
+  lastName              String             @default("") @map("last_name")
+  phoneNumber           String             @default("") @map("phone_number")
+  address               String             @default("")
+  role                  String             @default("student")
+  isActive              Boolean            @default(true) @map("is_active")
+  isSuperuser           Boolean            @default(false) @map("is_superuser")
+  isStaff               Boolean            @default(false) @map("is_staff")
+  createdAt             DateTime           @default(now()) @map("created_at")
+  updatedAt             DateTime           @updatedAt @map("updated_at")
+  dateJoined            DateTime           @default(now()) @map("date_joined")
+  lastLogin             DateTime?          @map("last_login")
+  accounts              Account[]
+  sessions              Session[]
+  bookReviews           BookReview[]
+  approvedRequests      BookRequest[]      @relation("ApprovedRequests")
+  bookRequests          BookRequest[]      @relation("UserRequests")
+  issuedBooks           BorrowRecord[]     @relation("IssuedBy")
+  returnedBooks         BorrowRecord[]     @relation("ReturnedTo")
+  borrowRecords         BorrowRecord[]     @relation("UserBorrows")
+  systemSettingsUpdates SystemSettings[]
+  payments              Payment[]
+  activityLogs          ActivityLog[]
+  emailAddresses        EmailAddress[]
+  readNotifications     NotificationRead[]
+  profile               UserProfile?
+
+  @@index([email])
+  @@index([role])
+  @@map("users_user")
+}
+
+model UserProfile {
+  id                Int      @id @default(autoincrement())
+  userId            Int      @unique @map("user_id")
+  maxBooksAllowed   Int      @default(7) @map("max_books_allowed")
+  currentlyBorrowed Int      @default(0) @map("currently_borrowed")
+  totalFines        Decimal  @default(0.00) @map("total_fines") @db.Decimal(10, 2)
+  profilePicture    String?  @map("profile_picture")
+  readingBadge      String   @default("reader") @map("reading_badge")
+  totalBooksRead    Int      @default(0) @map("total_books_read")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("users_userprofile")
+}
+
+model NotificationRead {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @map("user_id")
+  notificationType String   @map("notification_type")
+  notificationKey  String   @map("notification_key")
+  readAt           DateTime @default(now()) @map("read_at")
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, notificationType, notificationKey])
+  @@index([userId, notificationType])
+  @@index([notificationKey])
+  @@map("users_notificationread")
+}
+
+model ActivityLog {
+  id          Int      @id @default(autoincrement())
+  userId      Int?     @map("user_id")
+  action      String
+  description String
+  ipAddress   String?  @map("ip_address")
+  userAgent   String   @default("") @map("user_agent")
+  createdAt   DateTime @default(now()) @map("created_at")
+  user        User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId, action])
+  @@index([createdAt])
+  @@map("users_activitylog")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            Int     @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("auth_accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       Int      @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("auth_sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("auth_verification_tokens")
+}
+
+model EmailAddress {
+  id       Int     @id @default(autoincrement())
+  userId   Int     @map("user_id")
+  email    String
+  verified Boolean @default(false)
+  primary  Boolean @default(false)
+  key      String? @unique
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, email])
+  @@map("users_emailaddress")
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String   @default("")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  books       Book[]
+
+  @@index([name])
+  @@map("books_category")
+}
+
+model Book {
+  id              Int            @id @default(autoincrement())
+  isbn            String         @unique
+  title           String
+  author          String
+  description     String         @default("")
+  categoryId      Int?           @map("category_id")
+  totalCopies     Int            @map("total_copies")
+  availableCopies Int            @map("available_copies")
+  coverImage      String?        @map("cover_image")
+  pdfFile         String?        @map("pdf_file")
+  publisher       String         @default("")
+  publicationDate DateTime?      @map("publication_date") @db.Date
+  pages           Int?
+  language        String         @default("en")
+  rating          Decimal        @default(0.00) @db.Decimal(3, 2)
+  timesBorrowed   Int            @default(0) @map("times_borrowed")
+  qrCode          String?        @map("qr_code")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  category        Category?      @relation(fields: [categoryId], references: [id])
+  reviews         BookReview[]
+  bookRequests    BookRequest[]
+  borrowRecords   BorrowRecord[]
+
+  @@index([isbn])
+  @@index([title])
+  @@index([categoryId])
+  @@index([availableCopies])
+  @@map("books_book")
+}
+
+model BookReview {
+  id         Int      @id @default(autoincrement())
+  bookId     Int      @map("book_id")
+  userId     Int      @map("user_id")
+  rating     Int
+  reviewText String   @default("") @map("review_text")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  book       Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([bookId, userId])
+  @@index([bookId, userId])
+  @@map("books_bookreview")
+}
+
+model BookRequest {
+  id                 Int           @id @default(autoincrement())
+  userId             Int           @map("user_id")
+  bookId             Int           @map("book_id")
+  requestDate        DateTime      @default(now()) @map("request_date")
+  status             String        @default("pending")
+  approvedById       Int?          @map("approved_by_id")
+  approvedDate       DateTime?     @map("approved_date")
+  rejectionReason    String        @default("") @map("rejection_reason")
+  cancellationReason String        @default("") @map("cancellation_reason")
+  notes              String        @default("")
+  notified           Boolean       @default(false)
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+  approvedBy         User?         @relation("ApprovedRequests", fields: [approvedById], references: [id])
+  book               Book          @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user               User          @relation("UserRequests", fields: [userId], references: [id], onDelete: Cascade)
+  borrowRecord       BorrowRecord?
+
+  @@index([userId, status])
+  @@index([bookId, status])
+  @@index([status])
+  @@map("borrow_bookrequest")
+}
+
+model BorrowRecord {
+  id            Int          @id @default(autoincrement())
+  userId        Int          @map("user_id")
+  bookId        Int          @map("book_id")
+  bookRequestId Int?         @unique @map("book_request_id")
+  borrowDate    DateTime     @default(now()) @map("borrow_date")
+  dueDate       DateTime     @map("due_date") @db.Date
+  returnDate    DateTime?    @map("return_date") @db.Date
+  status        String       @default("borrowed")
+  fineAmount    Decimal      @default(0.00) @map("fine_amount") @db.Decimal(10, 2)
+  finePaid      Boolean      @default(false) @map("fine_paid")
+  issuedById    Int?         @map("issued_by_id")
+  returnedToId  Int?         @map("returned_to_id")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+  book          Book         @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  bookRequest   BookRequest? @relation(fields: [bookRequestId], references: [id])
+  issuedBy      User?        @relation("IssuedBy", fields: [issuedById], references: [id])
+  returnedTo    User?        @relation("ReturnedTo", fields: [returnedToId], references: [id])
+  user          User         @relation("UserBorrows", fields: [userId], references: [id], onDelete: Cascade)
+  payments      Payment[]
+
+  @@index([userId, status])
+  @@index([bookId])
+  @@index([dueDate])
+  @@map("borrow_borrowrecord")
+}
+
+model SystemSettings {
+  id                 Int      @id @default(1)
+  defaultBorrowLimit Int      @default(5) @map("default_borrow_limit")
+  finePerDay         Decimal  @default(2.00) @map("fine_per_day") @db.Decimal(5, 2)
+  etbToUsdRate       Decimal  @default(0.0180) @map("etb_to_usd_rate") @db.Decimal(6, 4)
+  maxBorrowDays      Int      @default(14) @map("max_borrow_days")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+  updatedById        Int?     @map("updated_by_id")
+  updatedBy          User?    @relation(fields: [updatedById], references: [id])
+
+  @@map("dashboard_systemsettings")
+}
+
+model Payment {
+  id                     String         @id @default(uuid())
+  userId                 Int            @map("user_id")
+  borrowRecordId         Int            @map("borrow_record_id")
+  amount                 Decimal        @db.Decimal(10, 2)
+  currency               String
+  paymentMethod          String         @map("payment_method")
+  status                 String         @default("pending")
+  transactionId          String         @unique @map("transaction_id")
+  paymentGatewayResponse Json?          @map("payment_gateway_response")
+  createdAt              DateTime       @default(now()) @map("created_at")
+  updatedAt              DateTime       @updatedAt @map("updated_at")
+  chapaDetails           ChapaPayment?
+  borrowRecord           BorrowRecord   @relation(fields: [borrowRecordId], references: [id], onDelete: Cascade)
+  user                   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeDetails          StripePayment?
+
+  @@index([userId, status])
+  @@index([transactionId])
+  @@index([paymentMethod, status])
+  @@map("payments_payment")
+}
+
+model StripePayment {
+  id                    Int     @id @default(autoincrement())
+  paymentId             String  @unique @map("payment_id")
+  stripePaymentIntentId String  @unique @map("stripe_payment_intent_id")
+  stripeChargeId        String  @default("") @map("stripe_charge_id")
+  stripeCustomerId      String  @default("") @map("stripe_customer_id")
+  stripePaymentMethodId String  @default("") @map("stripe_payment_method_id")
+  payment               Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@map("payments_stripepayment")
+}
+
+model ChapaPayment {
+  id                Int     @id @default(autoincrement())
+  paymentId         String  @unique @map("payment_id")
+  chapaTxRef        String  @unique @map("chapa_tx_ref")
+  chapaCheckoutUrl  String  @default("") @map("chapa_checkout_url")
+  paymentMethodType String  @default("telebirr") @map("payment_method_type")
+  payment           Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@map("payments_chapapayment")
+}
+
+enum UserRole {
+  admin
+  librarian
+  student
+}
+
+enum ReadingBadge {
+  reader
+  book_lover
+  avid_reader
+}
+
+enum ActivityAction {
+  book_added
+  book_updated
+  book_deleted
+  book_borrowed
+  book_returned
+  request_created
+  request_approved
+  request_rejected
+  request_cancelled
+  fine_paid
+  payment_initiated
+  payment_completed
+  payment_failed
+  user_created
+  user_updated
+  user_role_changed
+  review_added
+  backup_created
+  backup_restored
+  reminder_sent
+  settings_updated
+  other
+}
+
+enum BookLanguage {
+  en
+  hi
+  es
+  fr
+  de
+  other
+}
+
+enum RequestStatus {
+  pending
+  ready
+  fulfilled
+  cancelled
+  rejected
+}
+
+enum BorrowStatus {
+  borrowed
+  returned
+  overdue
+}
+
+enum PaymentStatus {
+  pending
+  processing
+  completed
+  failed
+  refunded
+  cancelled
+}
+
+enum PaymentMethod {
+  stripe
+  chapa
+}
+
+enum ChapaMethodType {
+  telebirr
+  cbebirr
+  ebirr
+  mpesa
+  bank
+}
