@@ -46,7 +46,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         const buf = Buffer.from(await pdfFileInput.arrayBuffer());
         if (process.env.CLOUDINARY_CLOUD_NAME) {
             const { uploadToCloudinary } = await import("@/lib/cloudinary");
-            const r = await uploadToCloudinary(buf, "pdfs", undefined, "raw");
+            const r = await uploadToCloudinary(buf, "pdfs", undefined, "image");
             pdfFileUrl = r.url;
         }
     }

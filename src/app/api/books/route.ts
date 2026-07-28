@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     if (pdfFileInput && pdfFileInput.size > 0) {
         const buf = Buffer.from(await pdfFileInput.arrayBuffer());
         if (process.env.CLOUDINARY_CLOUD_NAME) {
-            const r = await uploadToCloudinary(buf, "pdfs", undefined, "raw");
+            const r = await uploadToCloudinary(buf, "pdfs", undefined, "image");
             pdfFileUrl = r.url;
         }
     }
