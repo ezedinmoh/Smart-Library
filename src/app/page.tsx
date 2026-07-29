@@ -7,6 +7,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { serializePrisma } from "@/lib/utils";
 import BookGridClient from "./BookGridClient";
+import { SmoothScrollProvider, ScrollReveal, StaggerContainer, StaggerItem } from "@/components/landing/LandingAnimations";
 
 export const metadata: Metadata = {
   title: "Home - Smart Library",
@@ -59,14 +60,16 @@ export default async function HomePage() {
 
   return (
     <AppShell>
-      <HomePage_Content
-        totalBooks={totalBooks}
-        totalUsers={totalUsers}
-        dailyBorrows={dailyBorrows}
-        categoriesStats={categoriesStats}
-        featuredBooks={serializePrisma(featuredBooks)}
-        heroBooks={serializePrisma(heroBooks)}
-      />
+      <SmoothScrollProvider>
+        <HomePage_Content
+          totalBooks={totalBooks}
+          totalUsers={totalUsers}
+          dailyBorrows={dailyBorrows}
+          categoriesStats={categoriesStats}
+          featuredBooks={serializePrisma(featuredBooks)}
+          heroBooks={serializePrisma(heroBooks)}
+        />
+      </SmoothScrollProvider>
     </AppShell>
   );
 }
@@ -96,7 +99,7 @@ function HomePage_Content({ totalBooks, totalUsers, dailyBorrows, categoriesStat
         </div>
 
         <div className="hero-container">
-          <div className="hero-content">
+          <ScrollReveal direction="left" duration={0.8} className="hero-content">
             <span className="hero-badge">
               <span className="hero-badge-dot" />
               Welcome to the Future of Libraries
@@ -120,8 +123,9 @@ function HomePage_Content({ totalBooks, totalUsers, dailyBorrows, categoriesStat
               <div className="stat-divider" />
               <div className="stat"><span className="stat-number">{dailyBorrows}+</span><span className="stat-label">Daily Borrows</span></div>
             </div>
-          </div>
-          <div className="hero-visual">
+          </ScrollReveal>
+
+          <ScrollReveal direction="right" duration={0.9} delay={0.2} className="hero-visual">
             <div className="floating-books">
               {heroBooks.map((book: any, i: number) => (
                 <div key={book.id} className={`hero-book-card book-${i + 1}`}>
@@ -136,7 +140,7 @@ function HomePage_Content({ totalBooks, totalUsers, dailyBorrows, categoriesStat
                 </div>
               ))}
             </div>
-          </div>
+          </ScrollReveal>
         </div>
 
         {/* Floating Scroll Down Indicator */}
@@ -154,59 +158,69 @@ function HomePage_Content({ totalBooks, totalUsers, dailyBorrows, categoriesStat
       {/* ── Features ───────────────────────────────── */}
       <section className="features" id="features">
         <div className="container">
-          <div className="section-header">
+          <ScrollReveal direction="up" className="section-header">
             <span className="section-badge">Features</span>
             <h2>Everything You Need for a <span className="gradient-text">Smart Library</span></h2>
             <p>Powerful tools designed to enhance your reading experience and library management</p>
-          </div>
-          <div className="features-grid">
+          </ScrollReveal>
+
+          <StaggerContainer className="features-grid">
             {[
               { icon: <><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></>, title: "Vast Collection", desc: "Access over 50,000 books across various genres, from classic literature to modern bestsellers." },
               { icon: <><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></>, title: "24/7 Access", desc: "Browse and borrow books anytime, anywhere. Your library never closes." },
               { icon: <><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></>, title: "Secure System", desc: "Role-based access control ensures secure management for admins, librarians, and students." },
-              { icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></>, title: "Community", desc: "Connect with fellow readers, share reviews, and discover new favorites." },
+              { icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 1 0 7.75" /></>, title: "Community", desc: "Connect with fellow readers, share reviews, and discover new favorites." },
               { icon: <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />, title: "Smart Recommendations", desc: "Get personalized book suggestions based on your reading history and preferences." },
               { icon: <><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></>, title: "Progress Tracking", desc: "Track your reading progress, set goals, and celebrate your achievements." },
             ].map((f, i) => (
-              <div key={i} className="feature-card">
+              <StaggerItem key={i} className="feature-card">
                 <div className={`feature-icon gradient-bg-${i + 1}`}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{f.icon}</svg></div>
                 <h3>{f.title}</h3><p>{f.desc}</p>
-              </div>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </div>
       </section>
 
       {/* ── Categories ─────────────────────────────── */}
       <section className="categories" id="categories">
         <div className="container">
-          <div className="section-header">
+          <ScrollReveal direction="up" className="section-header">
             <span className="section-badge">Categories</span>
             <h2>Browse by <span className="gradient-text">Category</span></h2>
             <p>Find your next read from our carefully curated collections</p>
-          </div>
-          <div className="categories-grid">
+          </ScrollReveal>
+
+          <StaggerContainer className="categories-grid">
             {categoriesStats.map((cat: any) => (
-              <Link key={cat.id} href={`/books/categories/${cat.id}`} className="category-card">
-                <div className="category-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{CATEGORY_ICONS[cat.name] ?? defaultIcon}</svg></div>
-                <h3>{cat.name}</h3>
-                <p>{cat.book_count} Book{cat.book_count !== 1 ? "s" : ""}</p>
-              </Link>
+              <StaggerItem key={cat.id}>
+                <Link href={`/books/categories/${cat.id}`} className="category-card">
+                  <div className="category-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{CATEGORY_ICONS[cat.name] ?? defaultIcon}</svg></div>
+                  <h3>{cat.name}</h3>
+                  <p>{cat.book_count} Book{cat.book_count !== 1 ? "s" : ""}</p>
+                </Link>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </div>
       </section>
 
       {/* ── Popular Books ─────────────────────────── */}
       <section className="books" id="books">
         <div className="container">
-          <div className="section-header">
+          <ScrollReveal direction="up" className="section-header">
             <span className="section-badge">Featured Books</span>
             <h2>Popular <span className="gradient-text">Books</span></h2>
             <p>Discover our most borrowed and highly rated books</p>
-          </div>
-          <BookGridClient books={featuredBooks} />
-          <div className="view-all"><Link href="/books" className="btn btn-primary">View All Books</Link></div>
+          </ScrollReveal>
+
+          <ScrollReveal direction="up" delay={0.2}>
+            <BookGridClient books={featuredBooks} />
+          </ScrollReveal>
+
+          <ScrollReveal direction="up" delay={0.3} className="view-all">
+            <Link href="/books" className="btn btn-primary">View All Books</Link>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -214,7 +228,7 @@ function HomePage_Content({ totalBooks, totalUsers, dailyBorrows, categoriesStat
       <section className="my-books" id="my-books">
         <div className="container">
           <div className="my-books-content">
-            <div className="my-books-text">
+            <ScrollReveal direction="left" className="my-books-text">
               <span className="section-badge">My Books</span>
               <h2>Track Your <span className="gradient-text">Reading Journey</span></h2>
               <p>Keep track of all your borrowed books, due dates, and reading history in one beautiful dashboard. Never miss a return date again.</p>
@@ -238,10 +252,10 @@ function HomePage_Content({ totalBooks, totalUsers, dailyBorrows, categoriesStat
                 Get Started Free
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 18, height: 18 }}><path d="M5 12h14M12 5l7 7-7 7" /></svg>
               </Link>
-            </div>
+            </ScrollReveal>
 
             {/* Dashboard preview mockup */}
-            <div className="dashboard-preview">
+            <ScrollReveal direction="right" delay={0.2} className="dashboard-preview">
               <div className="dashboard-header">
                 <div className="dashboard-dots">
                   <span /><span /><span />
@@ -281,7 +295,7 @@ function HomePage_Content({ totalBooks, totalUsers, dailyBorrows, categoriesStat
                   </div>
                 ))}
               </div>
-            </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
@@ -290,13 +304,13 @@ function HomePage_Content({ totalBooks, totalUsers, dailyBorrows, categoriesStat
       <section className="request-book" id="request">
         <div className="container">
           <div className="request-content">
-            <div className="request-form-preview">
+            <ScrollReveal direction="left" className="request-form-preview">
               <h4>Request a Book</h4>
               <div className="form-preview-field"><span className="field-label">Book Title</span><span className="field-value">Search for a book...</span></div>
               <div className="form-preview-field"><span className="field-label">Your Name</span><span className="field-value">Your full name</span></div>
               <div className="form-preview-btn">Submit Request</div>
-            </div>
-            <div className="request-text">
+            </ScrollReveal>
+            <ScrollReveal direction="right" delay={0.2} className="request-text">
               <span className="section-badge">Book Requests</span>
               <h2>Request Any <span className="gradient-text">Book</span> You Need</h2>
               <p>Can&apos;t find what you&apos;re looking for? Submit a book request and our librarians will get it for you.</p>
@@ -309,7 +323,7 @@ function HomePage_Content({ totalBooks, totalUsers, dailyBorrows, categoriesStat
                 ))}
               </div>
               <Link href="/users/register" className="btn btn-primary">Get Started Free</Link>
-            </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
@@ -317,14 +331,14 @@ function HomePage_Content({ totalBooks, totalUsers, dailyBorrows, categoriesStat
       {/* ── CTA ───────────────────────────────────── */}
       <section className="cta">
         <div className="container">
-          <div className="cta-content">
+          <ScrollReveal direction="up" className="cta-content">
             <h2>Ready to Start Reading?</h2>
             <p>Join thousands of readers who have already discovered their next great book through SmartLibrary.</p>
             <div className="cta-buttons">
               <Link href="/users/register" className="btn btn-white">Get Started Free</Link>
               <Link href="/books" className="btn btn-ghost">Browse Books</Link>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
     </>
