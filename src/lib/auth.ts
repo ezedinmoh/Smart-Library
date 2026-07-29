@@ -78,8 +78,28 @@ function buildAdapter() {
         },
         linkAccount: async (data: any) => {
             const userId = typeof data.userId === "number" ? data.userId : parseInt(data.userId);
-            return prisma.account.create({
-                data: { ...data, userId },
+            const accountData = {
+                userId,
+                type: data.type,
+                provider: data.provider,
+                providerAccountId: String(data.providerAccountId),
+                refresh_token: data.refresh_token ?? null,
+                access_token: data.access_token ?? null,
+                expires_at: data.expires_at ? Number(data.expires_at) : null,
+                token_type: data.token_type ?? null,
+                scope: data.scope ?? null,
+                id_token: data.id_token ?? null,
+                session_state: data.session_state ?? null,
+            };
+            return prisma.account.upsert({
+                where: {
+                    provider_providerAccountId: {
+                        provider: data.provider,
+                        providerAccountId: String(data.providerAccountId),
+                    },
+                },
+                create: accountData,
+                update: accountData,
             });
         },
         getUserByAccount: async ({ provider, providerAccountId }: { provider: string; providerAccountId: string }) => {
