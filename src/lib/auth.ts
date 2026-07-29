@@ -172,31 +172,18 @@ const providers: NextAuthConfig["providers"] = [
     }),
 ];
 
-const googleClientId = (process.env.GOOGLE_CLIENT_ID || process.env.AUTH_GOOGLE_ID || "").trim();
-const googleClientSecret = (process.env.GOOGLE_CLIENT_SECRET || process.env.AUTH_GOOGLE_SECRET || "").trim();
-
-if (googleClientId && googleClientSecret) {
-    providers.push(
-        GoogleProvider({
-            clientId: googleClientId,
-            clientSecret: googleClientSecret,
-            allowDangerousEmailAccountLinking: true,
-        })
-    );
-}
-
-const githubClientId = (process.env.GITHUB_CLIENT_ID || process.env.AUTH_GITHUB_ID || "").trim();
-const githubClientSecret = (process.env.GITHUB_CLIENT_SECRET || process.env.AUTH_GITHUB_SECRET || "").trim();
-
-if (githubClientId && githubClientSecret) {
-    providers.push(
-        GitHubProvider({
-            clientId: githubClientId,
-            clientSecret: githubClientSecret,
-            allowDangerousEmailAccountLinking: true,
-        })
-    );
-}
+providers.push(
+    GoogleProvider({
+        clientId: (process.env.GOOGLE_CLIENT_ID || process.env.AUTH_GOOGLE_ID || "").trim(),
+        clientSecret: (process.env.GOOGLE_CLIENT_SECRET || process.env.AUTH_GOOGLE_SECRET || "").trim(),
+        allowDangerousEmailAccountLinking: true,
+    }),
+    GitHubProvider({
+        clientId: (process.env.GITHUB_CLIENT_ID || process.env.AUTH_GITHUB_ID || "").trim(),
+        clientSecret: (process.env.GITHUB_CLIENT_SECRET || process.env.AUTH_GITHUB_SECRET || "").trim(),
+        allowDangerousEmailAccountLinking: true,
+    })
+);
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     ...authConfig,
