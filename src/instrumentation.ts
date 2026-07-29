@@ -1,5 +1,14 @@
+import dns from "node:dns";
+
 /** Runs before the Next.js server starts — normalizes env vars and pre-warms the DB connection. */
 export async function register() {
+    // Force IPv4 first to eliminate WSL2 / Node 20+ IPv6 ETIMEDOUT network delays to Google/GitHub
+    try {
+        dns.setDefaultResultOrder("ipv4first");
+    } catch {
+        // Non-fatal if unsupported
+    }
+
     // Fix TLS issues in WSL/Node 24 — must set BEFORE any HTTPS requests
     if (!process.env.NODE_EXTRA_CA_CERTS) {
         process.env.NODE_EXTRA_CA_CERTS = "/etc/ssl/certs/ca-certificates.crt";
