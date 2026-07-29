@@ -20,7 +20,7 @@ function parseHostPort(urlStr: string) {
     }
 }
 
-function checkReachable(host: string, port: number, timeoutMs = 800): Promise<boolean> {
+function checkReachable(host: string, port: number, timeoutMs = 3000): Promise<boolean> {
     return new Promise((resolve) => {
         const socket = new net.Socket();
         let resolved = false;
@@ -71,9 +71,9 @@ async function getOrInitClient(): Promise<PrismaClient> {
         if (isRemote && fallbackUrl) {
             const hp = parseHostPort(primaryUrl);
             if (hp) {
-                const isReachable = await checkReachable(hp.host, hp.port, 800);
+                const isReachable = await checkReachable(hp.host, hp.port, 3000);
                 if (!isReachable) {
-                    console.warn(`[Database] Primary (${hp.host}) unreachable — using local PostgreSQL.`);
+                    console.warn(`[Database] Primary (${hp.host}) unreachable after 3s — falling back to local PostgreSQL.`);
                     useUrl = fallbackUrl;
                 } else {
                     console.log(`[Database] Connected to remote: ${hp.host}`);
