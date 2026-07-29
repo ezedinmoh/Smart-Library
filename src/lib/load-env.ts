@@ -134,7 +134,13 @@ function deriveDirectDatabaseUrl(): void {
         return;
     }
 
-    if (process.env.DIRECT_URL?.trim()) return;
+    if (process.env.DIRECT_URL?.trim()) {
+        // If DIRECT_URL points to db.*.supabase.co which times out, fallback to pooler port 5432
+        if (process.env.DIRECT_URL.includes("db.") && process.env.DIRECT_URL.includes(".supabase.co")) {
+            process.env.DIRECT_URL = process.env.DIRECT_URL.replace(/db\.[a-z0-9]+\.supabase\.co/i, "aws-0-eu-west-1.pooler.supabase.com");
+        }
+        return;
+    }
 
     const databaseUrl = process.env.DATABASE_URL?.trim();
     if (!databaseUrl) return;
@@ -143,25 +149,7 @@ function deriveDirectDatabaseUrl(): void {
         const url = new URL(databaseUrl);
         url.searchParams.delete("pgbouncer");
         url.searchParams.delete("connection_limit");
-
-        if (url.port === "6543") {
-            url.port = "5432";
-        }
-
-        // Supabase pooler → direct connection host
-        const poolerMatch = url.hostname.match(
-            /^aws-0-([a-z0-9-]+)\.pooler\.supabase\.com$/
-        );
-        const projectRef = url.username.includes(".")
-            ? url.username.split(".")[1]
-            : null;
-
-        if (poolerMatch && projectRef) {
-            url.hostname = `db.${projectRef}.supabase.co`;
-            url.username = "postgres";
-            url.port = "5432";
-        }
-
+        url.port = "5432";
         process.env.DIRECT_URL = url.toString();
     } catch {
         process.env.DIRECT_URL = databaseUrl;
