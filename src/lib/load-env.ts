@@ -93,6 +93,19 @@ function mapEmailConfig(): void {
     setIfMissing("BREVO_SMTP_PASSWORD", "EMAIL_HOST_PASSWORD");
 }
 
+/** Sync NextAuth v5 standard OAuth env var names */
+function mapOAuthKeys(): void {
+    setIfMissing("AUTH_GOOGLE_ID", "GOOGLE_CLIENT_ID");
+    setIfMissing("AUTH_GOOGLE_SECRET", "GOOGLE_CLIENT_SECRET");
+    setIfMissing("GOOGLE_CLIENT_ID", "AUTH_GOOGLE_ID");
+    setIfMissing("GOOGLE_CLIENT_SECRET", "AUTH_GOOGLE_SECRET");
+
+    setIfMissing("AUTH_GITHUB_ID", "GITHUB_CLIENT_ID");
+    setIfMissing("AUTH_GITHUB_SECRET", "GITHUB_CLIENT_SECRET");
+    setIfMissing("GITHUB_CLIENT_ID", "AUTH_GITHUB_ID");
+    setIfMissing("GITHUB_CLIENT_SECRET", "AUTH_GITHUB_SECRET");
+}
+
 /**
  * Prisma needs a direct Postgres URL for migrations.
  * Derive from DATABASE_URL when DIRECT_URL is missing (common on Supabase).
@@ -153,6 +166,7 @@ export function loadEnv(): void {
     loaded = true;
 
     mapAuthSecrets();
+    mapOAuthKeys();
     resolveAndSetSiteUrl();
     mapPaymentKeys();
     mapEmailConfig();

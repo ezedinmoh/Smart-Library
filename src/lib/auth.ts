@@ -16,14 +16,21 @@ function buildAdapter() {
     const adapter = PrismaAdapter(prisma);
     return {
         ...adapter,
-        // Convert string userId back to Int for DB lookups
+        // Convert string userId back to Int for DB lookups and ensure AdapterUser interface compatibility
         getUserById: async (id: string) => {
+            const userId = parseInt(id);
+            if (isNaN(userId)) return null;
             const user = await prisma.user.findUnique({
-                where: { id: parseInt(id) },
+                where: { id: userId },
                 include: { profile: true },
             });
             if (!user) return null;
-            return { ...user, id: String(user.id) };
+            return {
+                ...user,
+                id: String(user.id),
+                name: `${user.firstName} ${user.lastName}`.trim() || user.username,
+                emailVerified: null,
+            };
         },
         getUserByEmail: async (email: string) => {
             const user = await prisma.user.findFirst({
@@ -31,25 +38,48 @@ function buildAdapter() {
                 include: { profile: true },
             });
             if (!user) return null;
-            return { ...user, id: String(user.id) };
+            return {
+                ...user,
+                id: String(user.id),
+                name: `${user.firstName} ${user.lastName}`.trim() || user.username,
+                emailVerified: null,
+            };
         },
         createUser: async (data: any) => {
+            const email = data.email || "";
+            const usernameBase = (email.split("@")[0] || "user").replace(/[^a-z0-9]/gi, "").toLowerCase();
+            const username = `${usernameBase}${Math.floor(1000 + Math.random() * 9000)}`;
+            const firstName = data.name?.split(" ")[0] ?? "";
+            const lastName = data.name?.split(" ").slice(1).join(" ") ?? "";
+
             const user = await prisma.user.create({
                 data: {
-                    email: data.email,
-                    username: data.email.split("@")[0].replace(/[^a-z0-9]/gi, "").toLowerCase() + Math.floor(Math.random() * 9999),
-                    firstName: data.name?.split(" ")[0] ?? "",
-                    lastName: data.name?.split(" ").slice(1).join(" ") ?? "",
+                    email,
+                    username,
+                    firstName,
+                    lastName,
                     password: "",
                     isActive: true,
                     role: "student",
+                    profile: {
+                        create: {
+                            profilePicture: data.image ?? null,
+                        },
+                    },
                 },
+                include: { profile: true },
             });
-            return { ...user, id: String(user.id) };
+            return {
+                ...user,
+                id: String(user.id),
+                name: `${user.firstName} ${user.lastName}`.trim() || user.username,
+                emailVerified: null,
+            };
         },
         linkAccount: async (data: any) => {
+            const userId = typeof data.userId === "number" ? data.userId : parseInt(data.userId);
             return prisma.account.create({
-                data: { ...data, userId: parseInt(data.userId) },
+                data: { ...data, userId },
             });
         },
         getUserByAccount: async ({ provider, providerAccountId }: { provider: string; providerAccountId: string }) => {
@@ -57,8 +87,13 @@ function buildAdapter() {
                 where: { provider_providerAccountId: { provider, providerAccountId } },
                 include: { user: { include: { profile: true } } },
             });
-            if (!account) return null;
-            return { ...account.user, id: String(account.user.id) };
+            if (!account || !account.user) return null;
+            return {
+                ...account.user,
+                id: String(account.user.id),
+                name: `${account.user.firstName} ${account.user.lastName}`.trim() || account.user.username,
+                emailVerified: null,
+            };
         },
     };
 }
@@ -117,21 +152,27 @@ const providers: NextAuthConfig["providers"] = [
     }),
 ];
 
-if (isOAuthConfigured("google")) {
+const googleClientId = (process.env.GOOGLE_CLIENT_ID || process.env.AUTH_GOOGLE_ID || "").trim();
+const googleClientSecret = (process.env.GOOGLE_CLIENT_SECRET || process.env.AUTH_GOOGLE_SECRET || "").trim();
+
+if (googleClientId && googleClientSecret) {
     providers.push(
         GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID!,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+            clientId: googleClientId,
+            clientSecret: googleClientSecret,
             allowDangerousEmailAccountLinking: true,
         })
     );
 }
 
-if (isOAuthConfigured("github")) {
+const githubClientId = (process.env.GITHUB_CLIENT_ID || process.env.AUTH_GITHUB_ID || "").trim();
+const githubClientSecret = (process.env.GITHUB_CLIENT_SECRET || process.env.AUTH_GITHUB_SECRET || "").trim();
+
+if (githubClientId && githubClientSecret) {
     providers.push(
         GitHubProvider({
-            clientId: process.env.GITHUB_CLIENT_ID!,
-            clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+            clientId: githubClientId,
+            clientSecret: githubClientSecret,
             allowDangerousEmailAccountLinking: true,
         })
     );
