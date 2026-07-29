@@ -4,12 +4,20 @@ import { SessionProvider } from "@/components/providers/SessionProvider";
 import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://smart-library-et.vercel.app"),
   title: {
     default: "Smart Library Management System",
     template: "%s - Smart Library",
   },
   description:
     "Access thousands of books, manage your reading journey, and connect with a community of passionate readers.",
+  openGraph: {
+    title: "Smart Library Management System",
+    description: "Access thousands of books and manage your reading journey.",
+    url: "https://smart-library-et.vercel.app",
+    siteName: "Smart Library",
+    type: "website",
+  },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

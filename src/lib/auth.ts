@@ -42,7 +42,6 @@ function buildAdapter() {
                     lastName: data.name?.split(" ").slice(1).join(" ") ?? "",
                     password: "",
                     isActive: true,
-                    isEmailVerified: true,
                     role: "student",
                 },
             });
