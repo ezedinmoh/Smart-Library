@@ -58,7 +58,7 @@ export default async function AppShell({ children }: Props) {
             />
             <ToastContainer />
             <ConfirmModal />
-            <main style={{ paddingTop: "16px", minHeight: "calc(100vh - 220px)" }}>
+            <main className="app-main">
                 {children}
             </main>
             <SharedFooter />

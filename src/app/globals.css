@@ -340,6 +340,11 @@ html {
   scroll-padding-top: 72px;
 }
 
+.app-main {
+  min-height: calc(100vh - 220px);
+  width: 100%;
+}
+
 section[id], section {
   scroll-margin-top: 72px;
 }
