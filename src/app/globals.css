@@ -344,21 +344,252 @@ section[id], section {
   scroll-margin-top: 72px;
 }
 
-/* Hero section — comfortable breathing room below fixed 72px navbar */
+/* ═══════════════════════════════════════════════════════
+   HERO SECTION — 100% Viewport Height & Glassmorphism
+═══════════════════════════════════════════════════════ */
+
 .hero {
-  padding-top: 112px !important;
-  padding-bottom: 64px !important;
-  min-height: auto !important;
+  min-height: calc(100vh - 72px) !important;
+  min-height: calc(100dvh - 72px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 40px 0 60px !important;
+  position: relative !important;
+  overflow: hidden !important;
 }
 
-@media (max-width: 768px) {
+/* Ambient glow lights behind hero */
+.hero-bg {
+  position: absolute !important;
+  inset: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+}
+
+.hero-glow {
+  position: absolute !important;
+  border-radius: 50% !important;
+  filter: blur(90px) !important;
+  opacity: 0.45 !important;
+  transition: opacity 0.5s ease;
+}
+
+.hero-glow.glow-1 {
+  width: 500px !important;
+  height: 500px !important;
+  top: -100px !important;
+  left: -100px !important;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, rgba(14, 169, 210, 0.1) 70%, transparent 100%) !important;
+}
+
+.hero-glow.glow-2 {
+  width: 600px !important;
+  height: 600px !important;
+  bottom: -150px !important;
+  right: -100px !important;
+  background: radial-gradient(circle, rgba(14, 169, 210, 0.35) 0%, rgba(99, 102, 241, 0.1) 70%, transparent 100%) !important;
+}
+
+[data-theme="dark"] .hero-glow {
+  opacity: 0.3 !important;
+}
+
+.hero-container {
+  position: relative !important;
+  z-index: 1 !important;
+  width: 100% !important;
+  max-width: 1280px !important;
+  padding: 0 24px !important;
+  display: grid !important;
+  grid-template-columns: 1.15fr 0.85fr !important;
+  gap: 48px !important;
+  align-items: center !important;
+  margin: auto 0 !important;
+}
+
+/* Animated Glass Badge */
+.hero-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 18px !important;
+  background: rgba(16, 185, 129, 0.1) !important;
+  border: 1px solid rgba(16, 185, 129, 0.25) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  color: var(--primary) !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  border-radius: 9999px !important;
+  margin-bottom: 24px !important;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.12) !important;
+}
+
+.hero-badge-dot {
+  width: 8px !important;
+  height: 8px !important;
+  background: var(--primary) !important;
+  border-radius: 50% !important;
+  box-shadow: 0 0 10px var(--primary) !important;
+  animation: pulseDot 2s infinite !important;
+}
+
+@keyframes pulseDot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.6; }
+}
+
+.hero h1 {
+  font-size: clamp(2.5rem, 5vw, 3.75rem) !important;
+  font-weight: 800 !important;
+  line-height: 1.12 !important;
+  margin-bottom: 20px !important;
+  letter-spacing: -0.03em !important;
+}
+
+.hero p {
+  font-size: clamp(1rem, 2vw, 1.2rem) !important;
+  color: var(--text-secondary) !important;
+  margin-bottom: 32px !important;
+  line-height: 1.7 !important;
+  max-width: 560px !important;
+}
+
+.hero-buttons {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  margin-bottom: 40px !important;
+}
+
+.btn-lg {
+  padding: 14px 28px !important;
+  font-size: 1rem !important;
+  border-radius: 14px !important;
+}
+
+.hero-stats {
+  display: flex !important;
+  align-items: center !important;
+  gap: 28px !important;
+  padding-top: 16px !important;
+  border-top: 1px solid var(--border) !important;
+}
+
+.stat-number {
+  font-size: 1.65rem !important;
+  font-weight: 800 !important;
+  background: linear-gradient(135deg, var(--text-primary), var(--primary)) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.stat-label {
+  font-size: 0.813rem !important;
+  font-weight: 500 !important;
+  color: var(--text-muted) !important;
+}
+
+/* Floating Book Card visual */
+.hero-book-card {
+  transition: transform 0.4s ease, box-shadow 0.4s ease !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.hero-book-card:hover {
+  transform: translateY(-8px) scale(1.03) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Scroll Down Indicator */
+.hero-scroll-indicator {
+  position: absolute !important;
+  bottom: 20px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 2 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 6px !important;
+  color: var(--text-muted) !important;
+  text-decoration: none !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer !important;
+}
+
+.hero-scroll-indicator:hover {
+  color: var(--primary) !important;
+}
+
+.scroll-text {
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+}
+
+.scroll-mouse {
+  width: 22px !important;
+  height: 34px !important;
+  border: 2px solid currentColor !important;
+  border-radius: 12px !important;
+  position: relative !important;
+  display: flex !important;
+  justify-content: center !important;
+}
+
+.scroll-wheel {
+  width: 4px !important;
+  height: 8px !important;
+  background: currentColor !important;
+  border-radius: 2px !important;
+  margin-top: 6px !important;
+  animation: scrollWheel 1.8s infinite ease-in-out !important;
+}
+
+.scroll-chevron {
+  width: 16px !important;
+  height: 16px !important;
+  animation: bounceChevron 1.8s infinite ease-in-out !important;
+}
+
+@keyframes scrollWheel {
+  0% { opacity: 1; transform: translateY(0); }
+  50% { opacity: 0.3; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounceChevron {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
+}
+
+@media (max-width: 992px) {
   .hero {
-    padding-top: 96px !important;
-    padding-bottom: 48px !important;
     min-height: auto !important;
+    padding: 60px 0 80px !important;
   }
   .hero-container {
-    gap: 32px !important;
+    grid-template-columns: 1fr !important;
+    text-align: center !important;
+  }
+  .hero p {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  .hero-buttons {
+    justify-content: center !important;
+  }
+  .hero-stats {
+    justify-content: center !important;
+  }
+  .hero-scroll-indicator {
+    display: none !important;
   }
 }
 

@@ -90,26 +90,33 @@ function HomePage_Content({ totalBooks, totalUsers, dailyBorrows, categoriesStat
     <>
       {/* ── Hero ───────────────────────────────────── */}
       <section className="hero" id="home">
-        <div className="hero-bg" />
+        <div className="hero-bg">
+          <div className="hero-glow glow-1" />
+          <div className="hero-glow glow-2" />
+        </div>
+
         <div className="hero-container">
           <div className="hero-content">
-            <span className="hero-badge">Welcome to the Future of Libraries</span>
+            <span className="hero-badge">
+              <span className="hero-badge-dot" />
+              Welcome to the Future of Libraries
+            </span>
             <h1>Discover Your Next <span className="gradient-text">Great Read</span></h1>
             <p>Access thousands of books, manage your reading journey, and connect with a community of passionate readers. Your personal library, reimagined.</p>
             <div className="hero-buttons">
-              <Link href="/users/register" className="btn btn-primary">
+              <Link href="/users/register" className="btn btn-primary btn-lg">
                 Get Started Free
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
               </Link>
-              <Link href="/books" className="btn btn-secondary">
+              <Link href="/books" className="btn btn-secondary btn-lg">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polygon points="10 8 16 12 10 16 10 8" /></svg>
                 Explore Library
               </Link>
             </div>
             <div className="hero-stats">
-              <div className="stat"><span className="stat-number">{totalBooks}+</span><span className="stat-label">Books</span></div>
+              <div className="stat"><span className="stat-number">{totalBooks}+</span><span className="stat-label">Books Available</span></div>
               <div className="stat-divider" />
-              <div className="stat"><span className="stat-number">{totalUsers}+</span><span className="stat-label">Members</span></div>
+              <div className="stat"><span className="stat-number">{totalUsers}+</span><span className="stat-label">Active Members</span></div>
               <div className="stat-divider" />
               <div className="stat"><span className="stat-number">{dailyBorrows}+</span><span className="stat-label">Daily Borrows</span></div>
             </div>
@@ -120,7 +127,7 @@ function HomePage_Content({ totalBooks, totalUsers, dailyBorrows, categoriesStat
                 <div key={book.id} className={`hero-book-card book-${i + 1}`}>
                   <div className={`hero-book-cover ${gradients[i]}`}>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", padding: 16, textAlign: "center" }}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" style={{ width: 48, height: 48, marginBottom: 10, opacity: 0.9 }}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" style={{ width: 44, height: 44, marginBottom: 10, opacity: 0.9 }}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
                       <span style={{ color: "white", fontWeight: 700, fontSize: "0.875rem", lineHeight: 1.4 }}>{book.title.split(" ").slice(0, 4).join(" ")}</span>
                       <span style={{ color: "rgba(255,255,255,0.75)", fontSize: "0.75rem", marginTop: 6 }}>{book.author.split(" ").slice(0, 3).join(" ")}</span>
                     </div>
@@ -131,6 +138,17 @@ function HomePage_Content({ totalBooks, totalUsers, dailyBorrows, categoriesStat
             </div>
           </div>
         </div>
+
+        {/* Floating Scroll Down Indicator */}
+        <a href="#features" className="hero-scroll-indicator" aria-label="Scroll down to features">
+          <span className="scroll-text">Explore Features</span>
+          <div className="scroll-mouse">
+            <div className="scroll-wheel" />
+          </div>
+          <svg className="scroll-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </a>
       </section>
 
       {/* ── Features ───────────────────────────────── */}
