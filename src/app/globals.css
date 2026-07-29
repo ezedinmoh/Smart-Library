@@ -345,6 +345,41 @@ html {
   width: 100%;
 }
 
+/* Card hover micro-animations & glowing borders */
+.feature-card {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.feature-card:hover {
+  border-color: var(--primary) !important;
+  box-shadow: 0 12px 30px rgba(16, 185, 129, 0.15) !important;
+}
+
+.feature-card .feature-icon svg {
+  transition: transform 0.3s ease !important;
+}
+
+.feature-card:hover .feature-icon svg {
+  transform: scale(1.15) rotate(4deg) !important;
+}
+
+.category-card {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.category-card:hover {
+  border-color: var(--primary) !important;
+  box-shadow: 0 12px 30px rgba(16, 185, 129, 0.15) !important;
+}
+
+.category-card .category-icon {
+  transition: transform 0.3s ease !important;
+}
+
+.category-card:hover .category-icon {
+  transform: scale(1.1) rotate(-3deg) !important;
+}
+
 section[id], section {
   scroll-margin-top: 72px;
 }

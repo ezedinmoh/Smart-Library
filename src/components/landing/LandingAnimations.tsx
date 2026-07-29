@@ -93,7 +93,7 @@ export function ScrollReveal({
 /** Container that staggers child items when scrolled into view */
 export function StaggerContainer({
     children,
-    staggerDelay = 0.1,
+    staggerDelay = 0.08,
     className = "",
     ...props
 }: {
@@ -128,11 +128,13 @@ export function StaggerItem({
     children,
     className = "",
     distance = 24,
+    whileHover = { y: -6, transition: { duration: 0.25, ease: EASE } },
     ...props
 }: {
     children: React.ReactNode;
     className?: string;
     distance?: number;
+    whileHover?: any;
 } & HTMLMotionProps<"div">) {
     return (
         <motion.div
@@ -144,7 +146,9 @@ export function StaggerItem({
                     transition: { duration: 0.6, ease: EASE },
                 },
             }}
+            whileHover={whileHover}
             className={className}
+            style={{ width: "100%", height: "100%" }}
             {...props}
         >
             {children}
