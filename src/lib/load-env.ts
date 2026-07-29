@@ -46,6 +46,24 @@ function mapAuthSecrets(): void {
  *   6. http://localhost:3000 (local fallback)
  */
 function resolveAndSetSiteUrl(): void {
+    const isVercel = !!process.env.VERCEL || !!process.env.VERCEL_ENV;
+
+    // Safeguard: If running on Vercel, discard any accidentally imported localhost values
+    if (isVercel) {
+        if (process.env.AUTH_URL?.includes("localhost") || process.env.AUTH_URL?.includes("127.0.0.1")) {
+            delete process.env.AUTH_URL;
+        }
+        if (process.env.NEXTAUTH_URL?.includes("localhost") || process.env.NEXTAUTH_URL?.includes("127.0.0.1")) {
+            delete process.env.NEXTAUTH_URL;
+        }
+        if (process.env.SITE_URL?.includes("localhost") || process.env.SITE_URL?.includes("127.0.0.1")) {
+            delete process.env.SITE_URL;
+        }
+        if (process.env.NEXT_PUBLIC_SITE_URL?.includes("localhost") || process.env.NEXT_PUBLIC_SITE_URL?.includes("127.0.0.1")) {
+            delete process.env.NEXT_PUBLIC_SITE_URL;
+        }
+    }
+
     // Step 1: Build candidate list in priority order
     const candidates = [
         process.env.AUTH_URL,
@@ -56,30 +74,21 @@ function resolveAndSetSiteUrl(): void {
         process.env.VERCEL_PROJECT_PRODUCTION_URL
             ? ensureHttps(process.env.VERCEL_PROJECT_PRODUCTION_URL)
             : undefined,
-        // VERCEL_URL is deployment-specific; use only as last resort
+        // VERCEL_URL is deployment-specific; use as fallback on Vercel
         process.env.VERCEL_URL
             ? ensureHttps(process.env.VERCEL_URL)
             : undefined,
     ];
 
-    // Step 2: Pick first non-empty value
+    // Step 2: Pick first valid non-localhost value on Vercel, or localhost when offline
     const resolved = candidates
         .map((c) => (c ? stripTrailingSlash(c.trim()) : ""))
-        .find((c) => c.length > 0) ?? "http://localhost:3000";
+        .find((c) => c.length > 0 && (!isVercel || (!c.includes("localhost") && !c.includes("127.0.0.1")))) ?? "http://localhost:3000";
 
-    // Step 3: Set all URL vars to the resolved value (only if currently missing/wrong)
-    // AUTH_URL is the v5 primary — always set it
-    if (!process.env.AUTH_URL?.trim()) {
-        process.env.AUTH_URL = resolved;
-    }
-    // NEXTAUTH_URL for v4 compat
-    if (!process.env.NEXTAUTH_URL?.trim()) {
-        process.env.NEXTAUTH_URL = process.env.AUTH_URL;
-    }
-    // SITE_URL for app-level usage (emails, links, etc.)
-    if (!process.env.SITE_URL?.trim()) {
-        process.env.SITE_URL = process.env.AUTH_URL;
-    }
+    // Step 3: Set all URL vars to the resolved value
+    process.env.AUTH_URL = resolved;
+    process.env.NEXTAUTH_URL = resolved;
+    process.env.SITE_URL = resolved;
 }
 
 /** Django STRIPE_PUBLIC_KEY → NEXT_PUBLIC_STRIPE_PUBLIC_KEY (build-time only) */
