@@ -23,9 +23,6 @@ const nextConfig: NextConfig = {
       { protocol: "http", hostname: "localhost", pathname: "/**" },
     ],
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },

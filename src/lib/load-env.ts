@@ -1,9 +1,10 @@
 /**
- * Normalizes Django/Render env var names into Next.js equivalents.
+ * Normalizes env var names for NextAuth v5 compatibility.
  * Import this module before any code reads process.env for app config.
  *
- * Paste Render exports as-is — aliases are applied automatically.
- * Local overrides in .env.local (e.g. SITE_URL=http://localhost:3000) win.
+ * Priority order for site URL (highest to lowest):
+ *   AUTH_URL > NEXTAUTH_URL > SITE_URL > NEXT_PUBLIC_SITE_URL
+ *   > VERCEL_PROJECT_PRODUCTION_URL > VERCEL_URL > localhost
  */
 
 function setIfMissing(target: string, source: string): void {
@@ -12,31 +13,81 @@ function setIfMissing(target: string, source: string): void {
     }
 }
 
-/** Django SECRET_KEY → NextAuth secrets */
+function stripTrailingSlash(url: string): string {
+    return url.replace(/\/+$/, "");
+}
+
+function ensureHttps(url: string): string {
+    const cleaned = url.replace(/^https?:\/\//, "");
+    return `https://${cleaned}`;
+}
+
+/** Sync NextAuth v4 ↔ v5 secret names */
 function mapAuthSecrets(): void {
     setIfMissing("NEXTAUTH_SECRET", "SECRET_KEY");
     setIfMissing("AUTH_SECRET", "SECRET_KEY");
+    // Sync in both directions — whichever is set, copy to the other
     setIfMissing("AUTH_SECRET", "NEXTAUTH_SECRET");
     setIfMissing("NEXTAUTH_SECRET", "AUTH_SECRET");
 }
 
-/** Django SITE_* → Next.js public site vars */
-function mapSiteConfig(): void {
-    // Non-public vars are safe to set at runtime
-    setIfMissing("NEXTAUTH_URL", "SITE_URL");
-    setIfMissing("NEXTAUTH_URL", "NEXT_PUBLIC_SITE_URL");
-    // NEXT_PUBLIC_* vars are baked in at build time — skip runtime assignment
-    // to avoid the SWC minifier inlining them as string literals in edge bundles
-    setIfMissing("SITE_URL", "NEXT_PUBLIC_SITE_URL");
+/**
+ * Resolve the canonical site URL for NextAuth v5.
+ *
+ * NextAuth v5 reads AUTH_URL as its primary URL. NEXTAUTH_URL is the v4 compat name.
+ * This function ensures AUTH_URL is always set to the correct production URL.
+ *
+ * Resolution priority:
+ *   1. AUTH_URL (explicitly set — wins always)
+ *   2. NEXTAUTH_URL (v4 compat — common in Vercel dashboards)
+ *   3. SITE_URL / NEXT_PUBLIC_SITE_URL (custom app vars)
+ *   4. VERCEL_PROJECT_PRODUCTION_URL (Vercel auto-var for production domain)
+ *   5. VERCEL_URL (Vercel auto-var — may be a preview/deployment URL)
+ *   6. http://localhost:3000 (local fallback)
+ */
+function resolveAndSetSiteUrl(): void {
+    // Step 1: Build candidate list in priority order
+    const candidates = [
+        process.env.AUTH_URL,
+        process.env.NEXTAUTH_URL,
+        process.env.SITE_URL,
+        process.env.NEXT_PUBLIC_SITE_URL,
+        // VERCEL_PROJECT_PRODUCTION_URL is always the custom/production domain
+        process.env.VERCEL_PROJECT_PRODUCTION_URL
+            ? ensureHttps(process.env.VERCEL_PROJECT_PRODUCTION_URL)
+            : undefined,
+        // VERCEL_URL is deployment-specific; use only as last resort
+        process.env.VERCEL_URL
+            ? ensureHttps(process.env.VERCEL_URL)
+            : undefined,
+    ];
+
+    // Step 2: Pick first non-empty value
+    const resolved = candidates
+        .map((c) => (c ? stripTrailingSlash(c.trim()) : ""))
+        .find((c) => c.length > 0) ?? "http://localhost:3000";
+
+    // Step 3: Set all URL vars to the resolved value (only if currently missing/wrong)
+    // AUTH_URL is the v5 primary — always set it
+    if (!process.env.AUTH_URL?.trim()) {
+        process.env.AUTH_URL = resolved;
+    }
+    // NEXTAUTH_URL for v4 compat
+    if (!process.env.NEXTAUTH_URL?.trim()) {
+        process.env.NEXTAUTH_URL = process.env.AUTH_URL;
+    }
+    // SITE_URL for app-level usage (emails, links, etc.)
+    if (!process.env.SITE_URL?.trim()) {
+        process.env.SITE_URL = process.env.AUTH_URL;
+    }
 }
 
 /** Django STRIPE_PUBLIC_KEY → NEXT_PUBLIC_STRIPE_PUBLIC_KEY (build-time only) */
 function mapPaymentKeys(): void {
-    // NEXT_PUBLIC_* is baked in at build time; just ensure the non-public alias works
     setIfMissing("STRIPE_PUBLIC_KEY", "NEXT_PUBLIC_STRIPE_PUBLIC_KEY");
 }
 
-/** Gmail SMTP vars from Django → Brevo (if Brevo not configured) */
+/** Gmail SMTP vars → Brevo (if Brevo not configured) */
 function mapEmailConfig(): void {
     setIfMissing("BREVO_SMTP_USER", "EMAIL_HOST_USER");
     setIfMissing("BREVO_SMTP_PASSWORD", "EMAIL_HOST_PASSWORD");
@@ -44,15 +95,17 @@ function mapEmailConfig(): void {
 
 /**
  * Prisma needs a direct Postgres URL for migrations.
- * Derive from DATABASE_URL when DIRECT_URL is missing (common on Render/Supabase).
- * Also handles LOCAL_DATABASE_URL override for local dev and SUPABASE_DATABASE_URL fallback.
+ * Derive from DATABASE_URL when DIRECT_URL is missing (common on Supabase).
  */
 function deriveDirectDatabaseUrl(): void {
-    const isPrismaCli = typeof process !== "undefined" &&
+    const isPrismaCli =
+        typeof process !== "undefined" &&
         Array.isArray((process as any).argv) &&
-        (process as any).argv.some((arg: string) => arg.includes("prisma") || arg.endsWith("prisma"));
+        (process as any).argv.some(
+            (arg: string) => arg.includes("prisma") || arg.endsWith("prisma")
+        );
 
-    // If running inside Prisma CLI (e.g. migrations), force local DB override if defined
+    // Inside Prisma CLI — force local DB if defined
     if (isPrismaCli && process.env.LOCAL_DATABASE_URL?.trim()) {
         process.env.DATABASE_URL = process.env.LOCAL_DATABASE_URL.trim();
         process.env.DIRECT_URL = process.env.LOCAL_DATABASE_URL.trim();
@@ -93,23 +146,6 @@ function deriveDirectDatabaseUrl(): void {
     }
 }
 
-/** On Vercel preview/production, fall back to VERCEL_URL when site URL is unset. */
-function mapVercelUrls(): void {
-    if (!process.env.VERCEL_URL) return;
-
-    const vercelOrigin = `https://${process.env.VERCEL_URL.replace(/^https?:\/\//, "")}`;
-
-    // Only fill gaps — .env.local / dashboard values always win
-    // Note: NEXT_PUBLIC_* vars are inlined at build time, so we only set
-    // the non-public variants that are safe to assign at runtime.
-    if (!process.env.NEXTAUTH_URL?.trim()) {
-        process.env.NEXTAUTH_URL = vercelOrigin;
-    }
-    if (!process.env.SITE_URL?.trim()) {
-        process.env.SITE_URL = vercelOrigin;
-    }
-}
-
 let loaded = false;
 
 export function loadEnv(): void {
@@ -117,17 +153,15 @@ export function loadEnv(): void {
     loaded = true;
 
     mapAuthSecrets();
-    mapSiteConfig();
+    resolveAndSetSiteUrl();
     mapPaymentKeys();
     mapEmailConfig();
     deriveDirectDatabaseUrl();
-    mapVercelUrls();
 
+    // Always trust host — required for Vercel deployments and custom domains
     if (process.env.AUTH_TRUST_HOST !== "false") {
         process.env.AUTH_TRUST_HOST = "true";
     }
-
-
 }
 
 // Eager load when this module is imported

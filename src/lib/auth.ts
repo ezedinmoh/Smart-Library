@@ -140,7 +140,9 @@ if (isOAuthConfigured("github")) {
 export const { handlers, auth, signIn, signOut } = NextAuth({
     ...authConfig,
     adapter: buildAdapter() as any,
-    secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
+    // NextAuth v5 primary secret name is AUTH_SECRET; NEXTAUTH_SECRET is v4 compat
+    secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
+    trustHost: true,
     providers,
     callbacks: {
         ...authConfig.callbacks,
