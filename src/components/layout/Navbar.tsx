@@ -114,11 +114,26 @@ export default function Navbar({ pendingCount = 0, notifCount = 0, notifications
                     <div className="nav-links" id="navLinks">
                         {!user && isHomePage ? (
                             <>
-                                <a href="#home" className="nav-link">Home</a>
-                                <a href="#features" className="nav-link">Features</a>
-                                <a href="#categories" className="nav-link">Categories</a>
-                                <a href="#books" className="nav-link">Books</a>
-                                <a href="#request" className="nav-link">Request Book</a>
+                                <a href="#home" className="nav-link">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 15, height: 15, display: "inline-block", marginRight: 5, verticalAlign: "text-bottom" }}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                                    Home
+                                </a>
+                                <a href="#features" className="nav-link">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 15, height: 15, display: "inline-block", marginRight: 5, verticalAlign: "text-bottom" }}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                    Features
+                                </a>
+                                <a href="#categories" className="nav-link">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 15, height: 15, display: "inline-block", marginRight: 5, verticalAlign: "text-bottom" }}><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                                    Categories
+                                </a>
+                                <a href="#books" className="nav-link">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 15, height: 15, display: "inline-block", marginRight: 5, verticalAlign: "text-bottom" }}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                                    Books
+                                </a>
+                                <a href="#request" className="nav-link">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 15, height: 15, display: "inline-block", marginRight: 5, verticalAlign: "text-bottom" }}><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                                    Request Book
+                                </a>
                             </>
                         ) : (
                             <>
@@ -224,8 +239,14 @@ export default function Navbar({ pendingCount = 0, notifCount = 0, notifications
                             </>
                         ) : (
                             <>
-                                <Link href="/users/login" className="btn btn-secondary btn-sm">Login</Link>
-                                <Link href="/users/register" className="btn btn-primary btn-sm">Sign Up</Link>
+                                <Link href="/users/login" className="btn btn-secondary btn-sm" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 15, height: 15 }}><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                                    Login
+                                </Link>
+                                <Link href="/users/register" className="btn btn-primary btn-sm" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 15, height: 15 }}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
+                                    Sign Up
+                                </Link>
                                 <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle theme"><SunIcon /><MoonIcon /></button>
                             </>
                         )}
