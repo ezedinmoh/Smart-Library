@@ -8,6 +8,15 @@ import type { Metadata } from "next";
 import { serializePrisma } from "@/lib/utils";
 import BookGridClient from "./BookGridClient";
 
+// Icon components for homepage buttons
+const SparklesIcon = () => <svg className="w-4 h-4 text-amber-400 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>;
+const UserPlusIcon = () => <svg className="w-4 h-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>;
+const ArrowRightIcon = () => <svg className="w-4 h-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>;
+const CompassIcon = () => <svg className="w-4 h-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>;
+const BookOpenIcon = () => <svg className="w-4 h-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
+const RocketIcon = () => <svg className="w-4 h-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.71 1.63-1.63 2.5-2.5-3.5-3.5-3-7-3-7s3.5-.5 7 3c.87-.87 1.79-1.79 2.5-2.5 1.5-1.26 2-5 2-5s-3.74.5-5 2c-.71.71-1.63 1.63-2.5 2.5-3.5-3.5-3-7-3-7s3.5-.5 7 3c.87-.87 1.79-1.79 2.5-2.5"/></svg>;
+const SendIcon = () => <svg className="w-4 h-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>;
+
 export const metadata: Metadata = {
   title: "Home - Smart Library",
   description: "SmartLibrary — your modern digital library. Discover, borrow, and track thousands of books.",
@@ -81,7 +90,6 @@ function HomePage_Content({ totalBooks, totalUsers, dailyBorrows, categoriesStat
     "Fiction": <><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></>,
     "History": <><circle cx="12" cy="12" r="10" /><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" /></>,
     "Business": <><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></>,
-    "Economics": <><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></>,
   };
   const defaultIcon = <><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></>;
   const gradients = ["gradient-1", "gradient-2", "gradient-3", "gradient-4", "gradient-5", "gradient-6"];
@@ -93,17 +101,20 @@ function HomePage_Content({ totalBooks, totalUsers, dailyBorrows, categoriesStat
         <div className="hero-bg" />
         <div className="hero-container">
           <div className="hero-content">
-            <span className="hero-badge">Welcome to the Future of Libraries</span>
+            <span className="hero-badge flex items-center gap-1.5 w-fit">
+              <SparklesIcon /> Welcome to the Future of Libraries
+            </span>
             <h1>Discover Your Next <span className="gradient-text">Great Read</span></h1>
             <p>Access thousands of books, manage your reading journey, and connect with a community of passionate readers. Your personal library, reimagined.</p>
             <div className="hero-buttons">
-              <Link href="/users/register" className="btn btn-primary">
-                Get Started Free
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              <Link href="/users/register" className="btn btn-primary inline-flex items-center gap-2">
+                <UserPlusIcon />
+                <span>Get Started Free</span>
+                <ArrowRightIcon />
               </Link>
-              <Link href="/books" className="btn btn-secondary">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polygon points="10 8 16 12 10 16 10 8" /></svg>
-                Explore Library
+              <Link href="/books" className="btn btn-secondary inline-flex items-center gap-2">
+                <CompassIcon />
+                <span>Explore Library</span>
               </Link>
             </div>
             <div className="hero-stats">
@@ -148,7 +159,7 @@ function HomePage_Content({ totalBooks, totalUsers, dailyBorrows, categoriesStat
               { icon: <><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></>, title: "Secure System", desc: "Role-based access control ensures secure management for admins, librarians, and students." },
               { icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></>, title: "Community", desc: "Connect with fellow readers, share reviews, and discover new favorites." },
               { icon: <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />, title: "Smart Recommendations", desc: "Get personalized book suggestions based on your reading history and preferences." },
-              { icon: <><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></>, title: "Progress Tracking", desc: "Track your reading progress, set goals, and celebrate your achievements." },
+              { icon: <><line x1="18" y1="20" x2="18" y2="10" /><line x1="6" y1="20" x2="6" y2="14" /></>, title: "Progress Tracking", desc: "Track your reading progress, set goals, and celebrate your achievements." },
             ].map((f, i) => (
               <div key={i} className="feature-card">
                 <div className={`feature-icon gradient-bg-${i + 1}`}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{f.icon}</svg></div>
@@ -188,7 +199,13 @@ function HomePage_Content({ totalBooks, totalUsers, dailyBorrows, categoriesStat
             <p>Discover our most borrowed and highly rated books</p>
           </div>
           <BookGridClient books={featuredBooks} />
-          <div className="view-all"><Link href="/books" className="btn btn-primary">View All Books</Link></div>
+          <div className="view-all">
+            <Link href="/books" className="btn btn-primary inline-flex items-center gap-2">
+              <BookOpenIcon />
+              <span>View All Books</span>
+              <ArrowRightIcon />
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -216,9 +233,10 @@ function HomePage_Content({ totalBooks, totalUsers, dailyBorrows, categoriesStat
                   </li>
                 ))}
               </ul>
-              <Link href="/users/register" className="btn btn-primary">
-                Get Started Free
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 18, height: 18 }}><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              <Link href="/users/register" className="btn btn-primary inline-flex items-center gap-2">
+                <RocketIcon />
+                <span>Get Started Free</span>
+                <ArrowRightIcon />
               </Link>
             </div>
 
@@ -276,7 +294,10 @@ function HomePage_Content({ totalBooks, totalUsers, dailyBorrows, categoriesStat
               <h4>Request a Book</h4>
               <div className="form-preview-field"><span className="field-label">Book Title</span><span className="field-value">Search for a book...</span></div>
               <div className="form-preview-field"><span className="field-label">Your Name</span><span className="field-value">Your full name</span></div>
-              <div className="form-preview-btn">Submit Request</div>
+              <div className="form-preview-btn flex items-center justify-center gap-2">
+                <SendIcon />
+                <span>Submit Request</span>
+              </div>
             </div>
             <div className="request-text">
               <span className="section-badge">Book Requests</span>
@@ -290,7 +311,11 @@ function HomePage_Content({ totalBooks, totalUsers, dailyBorrows, categoriesStat
                   </div>
                 ))}
               </div>
-              <Link href="/users/register" className="btn btn-primary">Get Started Free</Link>
+              <Link href="/users/register" className="btn btn-primary inline-flex items-center gap-2">
+                <SparklesIcon />
+                <span>Get Started Free</span>
+                <ArrowRightIcon />
+              </Link>
             </div>
           </div>
         </div>
@@ -303,8 +328,15 @@ function HomePage_Content({ totalBooks, totalUsers, dailyBorrows, categoriesStat
             <h2>Ready to Start Reading?</h2>
             <p>Join thousands of readers who have already discovered their next great book through SmartLibrary.</p>
             <div className="cta-buttons">
-              <Link href="/users/register" className="btn btn-white">Get Started Free</Link>
-              <Link href="/books" className="btn btn-ghost">Browse Books</Link>
+              <Link href="/users/register" className="btn btn-white inline-flex items-center gap-2">
+                <UserPlusIcon />
+                <span>Get Started Free</span>
+                <ArrowRightIcon />
+              </Link>
+              <Link href="/books" className="btn btn-ghost inline-flex items-center gap-2">
+                <BookOpenIcon />
+                <span>Browse Books</span>
+              </Link>
             </div>
           </div>
         </div>
