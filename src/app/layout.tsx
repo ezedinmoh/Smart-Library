@@ -11,6 +11,12 @@ export const metadata: Metadata = {
   },
   description:
     "Access thousands of books, manage your reading journey, and connect with a community of passionate readers.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Smart Library",
+  },
   openGraph: {
     title: "Smart Library Management System",
     description: "Access thousands of books and manage your reading journey.",
