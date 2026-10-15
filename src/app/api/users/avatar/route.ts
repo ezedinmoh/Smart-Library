@@ -3,13 +3,6 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { SessionUser } from "@/types";
 
-// Allow up to 10MB for profile picture uploads
-export const config = {
-    api: {
-        bodyParser: false,
-        sizeLimit: "10mb",
-    },
-};
 
 export async function POST(req: NextRequest) {
     const session = await auth();

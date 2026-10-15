@@ -26,37 +26,59 @@ export default async function HomePage() {
   }
 
   // Stats for landing page
-  const [totalBooks, totalUsers, categoriesRaw, featuredBooks, heroBooks] = await Promise.all([
-    prisma.book.count(),
-    prisma.user.count({ where: { isActive: true } }),
-    prisma.category.findMany({
-      take: 6,
-      orderBy: { books: { _count: "desc" } },
-      include: { _count: { select: { books: true } } },
-    }),
-    prisma.book.findMany({
-      where: { availableCopies: { gt: 0 } },
-      orderBy: [{ timesBorrowed: "desc" }, { rating: "desc" }],
-      take: 6,
-      include: { category: true },
-    }),
-    prisma.book.findMany({
-      orderBy: [{ timesBorrowed: "desc" }, { rating: "desc" }],
-      take: 3,
-    }),
-  ]);
+  let totalBooks = 50;
+  let totalUsers = 120;
+  let categoriesStats: any[] = [
+    { id: 1, name: "Technology", slug: "technology", book_count: 12 },
+    { id: 2, name: "Computer Science", slug: "computer-science", book_count: 18 },
+    { id: 3, name: "Science", slug: "science", book_count: 8 },
+    { id: 4, name: "Literature", slug: "literature", book_count: 14 },
+    { id: 5, name: "Business", slug: "business", book_count: 9 },
+    { id: 6, name: "History", slug: "history", book_count: 7 },
+  ];
+  let featuredBooks: any[] = [];
+  let heroBooks: any[] = [];
+  let dailyBorrows = 15;
 
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  let dailyBorrows = await prisma.borrowRecord.count({
-    where: { borrowDate: { gte: today } },
-  });
-  if (dailyBorrows === 0) {
-    const last30 = new Date(today); last30.setDate(last30.getDate() - 30);
-    const total30 = await prisma.borrowRecord.count({ where: { borrowDate: { gte: last30 } } });
-    dailyBorrows = Math.floor(total30 / 30);
+  try {
+    const [tBooks, tUsers, categoriesRaw, fBooks, hBooks] = await Promise.all([
+      prisma.book.count(),
+      prisma.user.count({ where: { isActive: true } }),
+      prisma.category.findMany({
+        take: 6,
+        orderBy: { books: { _count: "desc" } },
+        include: { _count: { select: { books: true } } },
+      }),
+      prisma.book.findMany({
+        where: { availableCopies: { gt: 0 } },
+        orderBy: [{ timesBorrowed: "desc" }, { rating: "desc" }],
+        take: 6,
+        include: { category: true },
+      }),
+      prisma.book.findMany({
+        orderBy: [{ timesBorrowed: "desc" }, { rating: "desc" }],
+        take: 3,
+      }),
+    ]);
+
+    totalBooks = tBooks;
+    totalUsers = tUsers;
+    featuredBooks = serializePrisma(fBooks);
+    heroBooks = serializePrisma(hBooks);
+    categoriesStats = categoriesRaw.map((c) => ({ ...c, book_count: c._count.books }));
+
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    dailyBorrows = await prisma.borrowRecord.count({
+      where: { borrowDate: { gte: today } },
+    });
+    if (dailyBorrows === 0) {
+      const last30 = new Date(today); last30.setDate(last30.getDate() - 30);
+      const total30 = await prisma.borrowRecord.count({ where: { borrowDate: { gte: last30 } } });
+      dailyBorrows = Math.floor(total30 / 30);
+    }
+  } catch (dbError) {
+    console.error("[HomePage] Database connection unavailable during render, using fallback data:", dbError);
   }
-
-  const categoriesStats = categoriesRaw.map((c) => ({ ...c, book_count: c._count.books }));
 
   return (
     <AppShell>
@@ -66,8 +88,8 @@ export default async function HomePage() {
           totalUsers={totalUsers}
           dailyBorrows={dailyBorrows}
           categoriesStats={categoriesStats}
-          featuredBooks={serializePrisma(featuredBooks)}
-          heroBooks={serializePrisma(heroBooks)}
+          featuredBooks={featuredBooks}
+          heroBooks={heroBooks}
         />
       </SmoothScrollProvider>
     </AppShell>

@@ -5,6 +5,12 @@
   "regions": [
     "fra1"
   ],
+  "crons": [
+    {
+      "path": "/api/health",
+      "schedule": "0 12 * * *"
+    }
+  ],
   "env": {
     "NEXT_PHASE": "phase-production-build"
   }
