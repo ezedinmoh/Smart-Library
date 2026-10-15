@@ -38,7 +38,13 @@ export default function LoginForm({ nextUrl, errorParam }: Props) {
     }
 
     useEffect(() => {
-        if (errorParam === "OAuthAccountNotLinked") {
+        const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+        const codeParam = params?.get("code");
+
+        if (codeParam === "EMAIL_NOT_VERIFIED") {
+            setError("Please verify your email address before logging in.");
+            setShowResend(true);
+        } else if (errorParam === "OAuthAccountNotLinked") {
             setError("This email is already registered. Please log in with your password.");
         } else if (errorParam === "CredentialsSignin") {
             setError("Invalid username or password. Please try again.");
@@ -78,20 +84,21 @@ export default function LoginForm({ nextUrl, errorParam }: Props) {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setError(""); setLoading(true);
+        const cleanUsername = username.trim();
         try {
-            const res = await signIn("credentials", { username, password, redirect: false });
-            if (res?.error === "EMAIL_NOT_VERIFIED") {
+            const res = await signIn("credentials", { username: cleanUsername, password, redirect: false });
+            if (res?.error === "EMAIL_NOT_VERIFIED" || (res as any)?.code === "EMAIL_NOT_VERIFIED") {
                 setError("Please verify your email address before logging in.");
                 setShowResend(true);
             } else if (res?.error) {
                 setError("Invalid username or password. Please try again.");
             } else {
                 if (rememberMe) {
-                    localStorage.setItem("rememberedUsername", username);
+                    localStorage.setItem("rememberedUsername", cleanUsername);
                 } else {
                     localStorage.removeItem("rememberedUsername");
                 }
-                showToast(`Welcome back, ${username}! You have successfully signed in.`, "success");
+                showToast(`Welcome back, ${cleanUsername}! You have successfully signed in.`, "success");
                 setTimeout(() => {
                     router.push(nextUrl || "/dashboard");
                     router.refresh();

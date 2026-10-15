@@ -1,5 +1,5 @@
 import "@/lib/load-env";
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import type { NextAuthConfig } from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -9,6 +9,10 @@ import { prisma } from "./prisma";
 import { hashPassword, shouldUpgradePasswordHash, verifyPassword } from "./password";
 import { isOAuthConfigured } from "./env";
 import { authConfig } from "./auth.config";
+
+export class EmailNotVerifiedError extends CredentialsSignin {
+    code = "EMAIL_NOT_VERIFIED";
+}
 
 // PrismaAdapter expects String IDs — our User uses Int.
 // This wrapper coerces types so OAuth sign-in works correctly.
@@ -128,7 +132,7 @@ const providers: NextAuthConfig["providers"] = [
         async authorize(credentials) {
             if (!credentials?.username || !credentials?.password) return null;
 
-            const usernameOrEmail = credentials.username as string;
+            const usernameOrEmail = (credentials.username as string).trim();
             const password = credentials.password as string;
 
             const user = await prisma.user.findFirst({
@@ -143,7 +147,7 @@ const providers: NextAuthConfig["providers"] = [
 
             if (!user) return null;
             if (!user.isActive) {
-                throw new Error("EMAIL_NOT_VERIFIED");
+                throw new EmailNotVerifiedError();
             }
 
             const passwordMatch = await verifyPassword(password, user.password);
