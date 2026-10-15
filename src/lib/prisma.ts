@@ -8,7 +8,7 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 
-async function verifyConnection(baseClient: PrismaClient, timeoutMs = 2500): Promise<boolean> {
+async function verifyConnection(baseClient: PrismaClient, timeoutMs = 5000): Promise<boolean> {
     try {
         const queryPromise = baseClient.$queryRaw`SELECT 1`;
         const timeoutPromise = new Promise((_, reject) =>
@@ -63,7 +63,7 @@ async function getOrInitClient(): Promise<PrismaClient> {
                 log: ["error"],
             });
 
-            const isHealthy = await verifyConnection(primaryBase, 2000);
+            const isHealthy = await verifyConnection(primaryBase, 5000);
 
             if (!isHealthy) {
                 console.warn("\n⚠️  [Database] Remote database unreachable or paused — seamlessly using local PostgreSQL.\n");
